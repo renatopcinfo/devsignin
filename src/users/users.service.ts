@@ -16,8 +16,11 @@ export class UsersService {
   ) {}
 
   public async signup(signupDto: SignupDto): Promise<User> {
-    const user = new this.usersModel(signupDto);
-    return user.save();
+    await this.verifyEmailExist(signupDto.email);
+
+    const createUser = new this.usersModel(signupDto);
+
+    return createUser.save();
   }
 
   public async signin(
@@ -43,6 +46,14 @@ export class UsersService {
     const user = await this.usersModel.findOne({ email });
     if (!user) {
       throw new NotFoundException('Email not found.');
+    }
+    return user;
+  }
+
+  private async verifyEmailExist(email: string): Promise<User> {
+    const user = await this.usersModel.findOne({ email });
+    if (user) {
+      throw new NotFoundException('Email already exist.');
     }
     return user;
   }
